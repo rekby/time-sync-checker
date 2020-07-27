@@ -15,13 +15,16 @@ fn main() {
 
     let socket = net::UdpSocket::bind( "0.0.0.0:".to_string() + port).expect("Bind");
     let listen = socket.try_clone().expect("clone socket");
+    let mut counter = 0;
     thread::spawn(move || loop {
         let mut buf:[u8; 16] = [0;16];
         match listen.recv(&mut buf){
             Ok(16)=> {
+                counter += 1;
                 let received = i128::from_le_bytes(buf);
-                let diff = unix_now() - received;
-                println!("diff: {}ms", diff)
+                let now = unix_now();
+                let diff = now - received;
+                println!("{:>6} now: {}, diff: {}ms", counter, now / 1000, diff)
             },
             Ok(other_len)=>println!("received_bytes: {}", other_len),
             Err(err)=>println!("receive error: {}", err),
